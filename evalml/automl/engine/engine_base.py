@@ -147,7 +147,10 @@ def train_pipeline(pipeline, X, y, automl_config, schema=True):
             random_seed=pipeline.random_seed,
         )
     cv_pipeline = pipeline.clone()
-    cv_pipeline.fit(X, y)
+    if cv_pipeline._is_stacked_ensemble:
+        cv_pipeline.fit(X, y, data_splitter=automl_config.data_splitter)
+    else:
+        cv_pipeline.fit(X, y)
     tune_binary_threshold(
         cv_pipeline,
         threshold_tuning_objective,
@@ -192,56 +195,35 @@ def train_and_score_pipeline(
         }
         full_y_train = ww.init_series(full_y_train.map(y_mapping))
     cv_pipeline = pipeline
-    for i, (train, valid) in enumerate(
-        automl_config.data_splitter.split(full_X_train, full_y_train)
-    ):
-        logger.debug(f"\t\tTraining and scoring on fold {i}")
-        X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
-        y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
-        if is_binary(automl_config.problem_type) or is_multiclass(
-            automl_config.problem_type
-        ):
-            diff_train = set(np.setdiff1d(full_y_train, y_train))
-            diff_valid = set(np.setdiff1d(full_y_train, y_valid))
-            diff_string = (
-                f"Missing target values in the training set after data split: {diff_train}. "
-                if diff_train
-                else ""
-            )
-            diff_string += (
-                f"Missing target values in the validation set after data split: {diff_valid}."
-                if diff_valid
-                else ""
-            )
-            if diff_string:
-                raise Exception(diff_string)
+    if pipeline._is_stacked_ensemble:
+        # Stacked ensemble requires data splitter info
         objectives_to_score = [
             automl_config.objective
         ] + automl_config.additional_objectives
         try:
-            logger.debug(f"\t\t\tFold {i}: starting training")
+            logger.debug(f"\t\t\Starting to train ensemble pipeline")
             cv_pipeline = train_pipeline(
-                pipeline, X_train, y_train, automl_config, schema=False
+                pipeline, full_X_train, full_y_train, automl_config, schema=False
             )
-            logger.debug(f"\t\t\tFold {i}: finished training")
+            logger.debug(f"\t\t\Finished training ensemble pipeline")
             if (
                 automl_config.optimize_thresholds
                 and is_binary(automl_config.problem_type)
                 and cv_pipeline.threshold is not None
             ):
                 logger.debug(
-                    f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})"
+                    f"\t\t\Ensemble pipeline: Optimal threshold found ({cv_pipeline.threshold:.3f})"
                 )
-            logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
+            logger.debug(f"\t\t\tEnsemble pipeline: Scoring trained pipeline")
             scores = cv_pipeline.score(
-                X_valid,
-                y_valid,
+                full_X_train,
+                full_y_train,
                 objectives=objectives_to_score,
-                X_train=X_train,
-                y_train=y_train,
+                X_train=full_X_train,
+                y_train=full_y_train,
             )
             logger.debug(
-                f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
+                f"\t\t\Ensemble pipeline: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
             )
             score = scores[automl_config.objective.name]
         except Exception as e:
@@ -250,7 +232,7 @@ def train_and_score_pipeline(
                     exception=e,
                     traceback=traceback.format_tb(sys.exc_info()[2]),
                     automl=automl_config,
-                    fold_num=i,
+                    fold_num=0,
                     pipeline=pipeline,
                 )
             if isinstance(e, PipelineScoreError):
@@ -272,12 +254,11 @@ def train_and_score_pipeline(
                         [np.nan] * len(automl_config.additional_objectives),
                     )
                 )
-
         ordered_scores = OrderedDict()
         ordered_scores.update({automl_config.objective.name: score})
         ordered_scores.update(scores)
-        ordered_scores.update({"# Training": y_train.shape[0]})
-        ordered_scores.update({"# Validation": y_valid.shape[0]})
+        ordered_scores.update({"# Training": full_y_train.shape[0]})
+        ordered_scores.update({"# Validation": 0})
 
         evaluation_entry = {
             "all_objective_scores": ordered_scores,
@@ -291,6 +272,106 @@ def train_and_score_pipeline(
         ):
             evaluation_entry["binary_classification_threshold"] = cv_pipeline.threshold
         cv_data.append(evaluation_entry)
+    else:
+        for i, (train, valid) in enumerate(
+            automl_config.data_splitter.split(full_X_train, full_y_train)
+        ):
+            logger.debug(f"\t\tTraining and scoring on fold {i}")
+            X_train, X_valid = full_X_train.ww.iloc[train], full_X_train.ww.iloc[valid]
+            y_train, y_valid = full_y_train.ww.iloc[train], full_y_train.ww.iloc[valid]
+            if is_binary(automl_config.problem_type) or is_multiclass(
+                automl_config.problem_type
+            ):
+                diff_train = set(np.setdiff1d(full_y_train, y_train))
+                diff_valid = set(np.setdiff1d(full_y_train, y_valid))
+                diff_string = (
+                    f"Missing target values in the training set after data split: {diff_train}. "
+                    if diff_train
+                    else ""
+                )
+                diff_string += (
+                    f"Missing target values in the validation set after data split: {diff_valid}."
+                    if diff_valid
+                    else ""
+                )
+                if diff_string:
+                    raise Exception(diff_string)
+            objectives_to_score = [
+                automl_config.objective
+            ] + automl_config.additional_objectives
+            try:
+                logger.debug(f"\t\t\tFold {i}: starting training")
+                cv_pipeline = train_pipeline(
+                    pipeline, X_train, y_train, automl_config, schema=False
+                )
+                logger.debug(f"\t\t\tFold {i}: finished training")
+                if (
+                    automl_config.optimize_thresholds
+                    and is_binary(automl_config.problem_type)
+                    and cv_pipeline.threshold is not None
+                ):
+                    logger.debug(
+                        f"\t\t\tFold {i}: Optimal threshold found ({cv_pipeline.threshold:.3f})"
+                    )
+                logger.debug(f"\t\t\tFold {i}: Scoring trained pipeline")
+                scores = cv_pipeline.score(
+                    X_valid,
+                    y_valid,
+                    objectives=objectives_to_score,
+                    X_train=X_train,
+                    y_train=y_train,
+                )
+                logger.debug(
+                    f"\t\t\tFold {i}: {automl_config.objective.name} score: {scores[automl_config.objective.name]:.3f}"
+                )
+                score = scores[automl_config.objective.name]
+            except Exception as e:
+                if automl_config.error_callback is not None:
+                    automl_config.error_callback(
+                        exception=e,
+                        traceback=traceback.format_tb(sys.exc_info()[2]),
+                        automl=automl_config,
+                        fold_num=i,
+                        pipeline=pipeline,
+                    )
+                if isinstance(e, PipelineScoreError):
+                    nan_scores = {objective: np.nan for objective in e.exceptions}
+                    scores = {**nan_scores, **e.scored_successfully}
+                    scores = OrderedDict(
+                        {
+                            o.name: scores[o.name]
+                            for o in [automl_config.objective]
+                            + automl_config.additional_objectives
+                        }
+                    )
+                    score = scores[automl_config.objective.name]
+                else:
+                    score = np.nan
+                    scores = OrderedDict(
+                        zip(
+                            [n.name for n in automl_config.additional_objectives],
+                            [np.nan] * len(automl_config.additional_objectives),
+                        )
+                    )
+
+            ordered_scores = OrderedDict()
+            ordered_scores.update({automl_config.objective.name: score})
+            ordered_scores.update(scores)
+            ordered_scores.update({"# Training": y_train.shape[0]})
+            ordered_scores.update({"# Validation": y_valid.shape[0]})
+
+            evaluation_entry = {
+                "all_objective_scores": ordered_scores,
+                "mean_cv_score": score,
+                "binary_classification_threshold": None,
+            }
+            if (
+                is_binary(automl_config.problem_type)
+                and cv_pipeline is not None
+                and cv_pipeline.threshold is not None
+            ):
+                evaluation_entry["binary_classification_threshold"] = cv_pipeline.threshold
+            cv_data.append(evaluation_entry)
     training_time = time.time() - start
     cv_scores = pd.Series([fold["mean_cv_score"] for fold in cv_data])
     cv_score_mean = cv_scores.mean()

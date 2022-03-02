@@ -2,8 +2,12 @@
 from abc import ABC, abstractmethod
 
 from evalml.exceptions import PipelineNotFoundError
+from evalml.pipelines.ensemble_binary_classification_pipeline import EnsembleBinaryClassificationPipeline
+from evalml.pipelines.ensemble_multiclass_classification_pipeline import EnsembleMulticlassClassificationPipeline
+from evalml.pipelines.ensemble_regression_pipeline import EnsembleRegressionPipeline
 from evalml.pipelines.utils import _make_stacked_ensemble_pipeline
 from evalml.problem_types import is_multiclass
+from evalml.problem_types.problem_types import ProblemTypes
 from evalml.tuners import SKOptTuner
 
 
@@ -111,42 +115,53 @@ class AutoMLAlgorithm(ABC):
         problem_type = best_pipelines[0]["pipeline"].problem_type
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
         input_pipelines = []
+
         for pipeline_dict in best_pipelines:
             pipeline = pipeline_dict["pipeline"]
-            pipeline_params = self._transform_parameters(
-                pipeline, pipeline_dict["parameters"]
-            )
-            if (
-                "Numeric Pipeline - Select Columns Transformer"
-                in pipeline.component_graph.component_instances
-            ):
-                pipeline_params.update(self._create_split_select_parameters())
-            elif (
-                "Select Columns Transformer"
-                in pipeline.component_graph.component_instances
-            ):
-                if self._selected_cols:
-                    pipeline_params.update(
-                        {"Select Columns Transformer": {"columns": self._selected_cols}}
-                    )
-                elif self._selected_cat_cols:
-                    pipeline_params.update(
-                        {
-                            "Select Columns Transformer": {
-                                "columns": self._selected_cat_cols
-                            }
-                        }
-                    )
-            input_pipelines.append(
-                pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
-            )
-
-        ensemble = _make_stacked_ensemble_pipeline(
-            input_pipelines,
-            problem_type,
-            random_seed=self.random_seed,
-            n_jobs=n_jobs_ensemble,
-        )
+            input_pipelines.append(pipeline)
+        if problem_type == ProblemTypes.BINARY:
+            ensemble = EnsembleBinaryClassificationPipeline(input_pipelines=input_pipelines)
+        elif problem_type == ProblemTypes.MULTICLASS:
+            ensemble = EnsembleMulticlassClassificationPipeline(input_pipelines=input_pipelines)
+        elif problem_type == ProblemTypes.REGRESSION:
+            ensemble = EnsembleRegressionPipeline(input_pipelines=input_pipelines)
+        else:
+            raise ValueError(f"Problem type {problem_type} is not supported for ensembling")
+        # for pipeline_dict in best_pipelines:
+        #     pipeline = pipeline_dict["pipeline"]
+        #     pipeline_params = self._transform_parameters(
+        #         pipeline, pipeline_dict["parameters"]
+        #     )
+        #     if (
+        #         "Numeric Pipeline - Select Columns Transformer"
+        #         in pipeline.component_graph.component_instances
+        #     ):
+        #         pipeline_params.update(self._create_split_select_parameters())
+        #     elif (
+        #         "Select Columns Transformer"
+        #         in pipeline.component_graph.component_instances
+        #     ):
+        #         if self._selected_cols:
+        #             pipeline_params.update(
+        #                 {"Select Columns Transformer": {"columns": self._selected_cols}}
+        #             )
+        #         elif self._selected_cat_cols:
+        #             pipeline_params.update(
+        #                 {
+        #                     "Select Columns Transformer": {
+        #                         "columns": self._selected_cat_cols
+        #                     }
+        #                 }
+        #             )
+        #     input_pipelines.append(
+        #         pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
+        #     )
+        # ensemble = _make_stacked_ensemble_pipeline(
+        #     input_pipelines,
+        #     problem_type,
+        #     random_seed=self.random_seed,
+        #     n_jobs=n_jobs_ensemble,
+        # )
         next_batch.append(ensemble)
         return next_batch
 
