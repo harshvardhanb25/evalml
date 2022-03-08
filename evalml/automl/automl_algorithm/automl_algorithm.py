@@ -119,14 +119,6 @@ class AutoMLAlgorithm(ABC):
         for pipeline_dict in best_pipelines:
             pipeline = pipeline_dict["pipeline"]
             input_pipelines.append(pipeline)
-        if problem_type == ProblemTypes.BINARY:
-            ensemble = EnsembleBinaryClassificationPipeline(input_pipelines=input_pipelines)
-        elif problem_type == ProblemTypes.MULTICLASS:
-            ensemble = EnsembleMulticlassClassificationPipeline(input_pipelines=input_pipelines)
-        elif problem_type == ProblemTypes.REGRESSION:
-            ensemble = EnsembleRegressionPipeline(input_pipelines=input_pipelines)
-        else:
-            raise ValueError(f"Problem type {problem_type} is not supported for ensembling")
         # for pipeline_dict in best_pipelines:
         #     pipeline = pipeline_dict["pipeline"]
         #     pipeline_params = self._transform_parameters(
@@ -156,6 +148,15 @@ class AutoMLAlgorithm(ABC):
         #     input_pipelines.append(
         #         pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
         #     )
+        if problem_type == ProblemTypes.BINARY:
+            ensemble = EnsembleBinaryClassificationPipeline(input_pipelines=input_pipelines)
+        elif problem_type == ProblemTypes.MULTICLASS:
+            ensemble = EnsembleMulticlassClassificationPipeline(input_pipelines=input_pipelines)
+        elif problem_type == ProblemTypes.REGRESSION:
+            ensemble = EnsembleRegressionPipeline(input_pipelines=input_pipelines)
+        else:
+            raise ValueError(f"Problem type {problem_type} is not supported for ensembling")
+
         # ensemble = _make_stacked_ensemble_pipeline(
         #     input_pipelines,
         #     problem_type,
