@@ -1150,7 +1150,10 @@ class AutoMLSearch:
         is_baseline = pipeline.model_family == ModelFamily.BASELINE
         if len(cv_scores) == 1:
             validation_score = cv_scores[0]
-            mean_cv_score = np.nan
+            if pipeline._is_stacked_ensemble:
+                mean_cv_score = validation_score
+            else:
+                mean_cv_score = np.nan
         elif len(cv_scores) > 1:
             validation_score = mean_cv_score = cv_scores.mean()
         cv_sd = cv_scores.std()

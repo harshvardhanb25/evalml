@@ -116,38 +116,38 @@ class AutoMLAlgorithm(ABC):
         n_jobs_ensemble = 1 if self.text_in_ensembling else self.n_jobs
         input_pipelines = []
 
-        for pipeline_dict in best_pipelines:
-            pipeline = pipeline_dict["pipeline"]
-            input_pipelines.append(pipeline)
         # for pipeline_dict in best_pipelines:
         #     pipeline = pipeline_dict["pipeline"]
-        #     pipeline_params = self._transform_parameters(
-        #         pipeline, pipeline_dict["parameters"]
-        #     )
-        #     if (
-        #         "Numeric Pipeline - Select Columns Transformer"
-        #         in pipeline.component_graph.component_instances
-        #     ):
-        #         pipeline_params.update(self._create_split_select_parameters())
-        #     elif (
-        #         "Select Columns Transformer"
-        #         in pipeline.component_graph.component_instances
-        #     ):
-        #         if self._selected_cols:
-        #             pipeline_params.update(
-        #                 {"Select Columns Transformer": {"columns": self._selected_cols}}
-        #             )
-        #         elif self._selected_cat_cols:
-        #             pipeline_params.update(
-        #                 {
-        #                     "Select Columns Transformer": {
-        #                         "columns": self._selected_cat_cols
-        #                     }
-        #                 }
-        #             )
-        #     input_pipelines.append(
-        #         pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
-        #     )
+        #     input_pipelines.append(pipeline)
+        for pipeline_dict in best_pipelines:
+            pipeline = pipeline_dict["pipeline"]
+            pipeline_params = self._transform_parameters(
+                pipeline, pipeline_dict["parameters"]
+            )
+            if (
+                "Numeric Pipeline - Select Columns Transformer"
+                in pipeline.component_graph.component_instances
+            ):
+                pipeline_params.update(self._create_split_select_parameters())
+            elif (
+                "Select Columns Transformer"
+                in pipeline.component_graph.component_instances
+            ):
+                if self._selected_cols:
+                    pipeline_params.update(
+                        {"Select Columns Transformer": {"columns": self._selected_cols}}
+                    )
+                elif self._selected_cat_cols:
+                    pipeline_params.update(
+                        {
+                            "Select Columns Transformer": {
+                                "columns": self._selected_cat_cols
+                            }
+                        }
+                    )
+            input_pipelines.append(
+                pipeline.new(parameters=pipeline_params, random_seed=self.random_seed)
+            )
         if problem_type == ProblemTypes.BINARY:
             ensemble = EnsembleBinaryClassificationPipeline(input_pipelines=input_pipelines)
         elif problem_type == ProblemTypes.MULTICLASS:
