@@ -2,6 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
+        *Defined `get_trend_df()` for PolynomialDetrender to allow decomposition of target data into trend, seasonality and residual. :pr:`3599`
         * Increased the amount of logical type information passed to Woodwork when calling ``ww.init()`` in transformers :pr:`3604`
         * Added ability to log how long each batch and pipeline take in ``automl.search()`` :pr:`3577`
         * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
@@ -11,6 +12,7 @@ Release Notes
         * Capped woodwork version at < 0.17.0 :pr:`3612`
         * Bump minimum scikit-optimize version to 0.9.0 `:pr:`3614`
     * Changes
+        *Added abstract Detrender class as a parent to PolynomialDetrender to support additional detrenders. :pr:`3599`
         * Add pre-commit hooks for linting :pr:`3608`
     * Documentation Changes
     * Testing Changes
