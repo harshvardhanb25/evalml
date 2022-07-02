@@ -77,7 +77,10 @@ def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, t
 
     X, y = X_input, y_input
 
-    if input_type == "ww":
+    if input_type == "np":
+        X = X_input.values
+        y = y_input.values
+    elif input_type == "ww":
         X = X_input.copy()
         X.ww.init()
         y = ww.init_series(y_input.copy())
@@ -135,10 +138,7 @@ def test_polynomial_detrender_get_trend_dataframe(
 
     X, y = X_input, y_input
 
-    if input_type == "np":
-        X = X_input.values
-        y = y_input.values
-    elif input_type == "ww":
+    if input_type == "ww":
         X = X_input.copy()
         X.ww.init()
         y = ww.init_series(y_input.copy())
