@@ -103,7 +103,6 @@ def test_polynomial_detrender_fit_transform(degree, use_int_index, input_type, t
         "multivariate",
     ],
 )
-# pytest.param("multivariate", marks=pytest.mark.xfail(reason="get_trend_dataframe doesn't work with multivariate data yet."))])
 @pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("degree", [1, 2, 3])
 def test_polynomial_detrender_get_trend_dataframe(
