@@ -62,15 +62,11 @@ def test_polynomial_decomposer_get_trend_df_raises_errors(ts_data):
         pdt.get_trend_dataframe(X, y)
 
 
-@pytest.mark.parametrize("input_type", ["np", "pd", "ww"])
-@pytest.mark.parametrize("use_int_index", [True, False])
+@pytest.mark.parametrize("input_type", ["pd", "ww"])
 @pytest.mark.parametrize("degree", [1, 2, 3])
-def test_polynomial_decomposer_fit_transform(degree, use_int_index, input_type, ts_data):
+def test_polynomial_decomposer_fit_transform(degree, input_type, ts_data):
 
     X_input, y_input = ts_data
-    if use_int_index:
-        X_input.index = np.arange(X_input.shape[0])
-        y_input.index = np.arange(y_input.shape[0])
 
     # Get the expected answer
     lin_reg = LinearRegression(fit_intercept=True)
@@ -84,10 +80,7 @@ def test_polynomial_decomposer_fit_transform(degree, use_int_index, input_type, 
 
     X, y = X_input, y_input
 
-    if input_type == "np":
-        X = X_input.values
-        y = y_input.values
-    elif input_type == "ww":
+    if input_type == "ww":
         X = X_input.copy()
         X.ww.init()
         y = ww.init_series(y_input.copy())
@@ -96,10 +89,7 @@ def test_polynomial_decomposer_fit_transform(degree, use_int_index, input_type, 
     pd.testing.assert_series_equal(expected_answer, output_y)
 
     # Verify the X is not changed
-    if input_type == "np":
-        np.testing.assert_equal(X, output_X)
-    else:
-        pd.testing.assert_frame_equal(X, output_X)
+    pd.testing.assert_frame_equal(X, output_X)
 
 
 @pytest.mark.parametrize(
