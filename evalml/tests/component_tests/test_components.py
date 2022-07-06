@@ -1109,7 +1109,11 @@ def test_all_transformers_check_fit(X_y_binary, ts_data_binary):
         # SMOTE will throw errors if we call it but cannot oversample
         if "Oversampler" == component_class.name:
             component = component_class(sampling_ratio=1)
-        elif component_class in [TimeSeriesFeaturizer, TimeSeriesRegularizer]:
+        elif component_class in [
+            TimeSeriesFeaturizer,
+            TimeSeriesRegularizer,
+            PolynomialDecomposer,
+        ]:
             X, y = ts_data_binary
             component = component_class(time_index="date")
 
