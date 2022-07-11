@@ -112,12 +112,8 @@ def test_data_checks(X_y_binary):
     ]
     data_checks = DataChecks(data_checks=data_checks_list)
     assert data_checks.validate(X, y) == [
-        DataCheckWarning(
-            message="warning one", data_check_name="MockDataCheckWarning"
-        ).to_dict(),
-        DataCheckError(
-            message="error one", data_check_name="MockDataCheckError"
-        ).to_dict(),
+        DataCheckWarning(message="warning one", data_check_name="MockDataCheckWarning").to_dict(),
+        DataCheckError(message="error one", data_check_name="MockDataCheckError").to_dict(),
         DataCheckWarning(
             message="warning two", data_check_name="MockDataCheckErrorAndWarning"
         ).to_dict(),
@@ -285,9 +281,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
         y = ww.init_series(y)
         y_multiclass = ww.init_series(y_multiclass)
 
-    data_checks = DefaultDataChecks(
-        "binary", get_default_primary_search_objective("binary")
-    )
+    data_checks = DefaultDataChecks("binary", get_default_primary_search_objective("binary"))
     imbalance = [
         DataCheckError(
             message="The number of instances of these targets is less than 2 * the number of cross folds = 6 instances: [0.0, 1.0]",
@@ -345,11 +339,7 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
 
     assert (
         data_checks.validate(X, y_multiclass)
-        == expected[:4]
-        + min_2_class_count
-        + high_class_to_sample_ratio
-        + expected[4:]
-        + imbalance
+        == expected[:4] + min_2_class_count + high_class_to_sample_ratio + expected[4:] + imbalance
     )
 
     data_checks = DataChecks(
@@ -517,9 +507,7 @@ def test_default_data_checks_across_problem_types(problem_type):
 
     if is_time_series(problem_type):
         if is_classification(problem_type):
-            default_data_check_list = default_data_check_list + [
-                TimeSeriesSplittingDataCheck
-            ]
+            default_data_check_list = default_data_check_list + [TimeSeriesSplittingDataCheck]
         default_data_check_list = default_data_check_list + [
             DateTimeFormatDataCheck,
             TimeSeriesParametersDataCheck,
@@ -529,9 +517,7 @@ def test_default_data_checks_across_problem_types(problem_type):
         ProblemTypes.REGRESSION,
         ProblemTypes.TIME_SERIES_REGRESSION,
     ]:
-        default_data_check_list = default_data_check_list + [
-            TargetDistributionDataCheck
-        ]
+        default_data_check_list = default_data_check_list + [TargetDistributionDataCheck]
     else:
         default_data_check_list = default_data_check_list + [ClassImbalanceDataCheck]
 
@@ -546,9 +532,7 @@ def test_default_data_checks_across_problem_types(problem_type):
         for check in DefaultDataChecks(
             problem_type,
             get_default_primary_search_objective(problem_type),
-            problem_configuration=problem_config
-            if is_time_series(problem_type)
-            else None,
+            problem_configuration=problem_config if is_time_series(problem_type) else None,
         ).data_checks
     ]
 
@@ -630,19 +614,19 @@ class MockCheck2(DataCheck):
             [MockCheck],
             {"mock_check": {"foo": 1}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) missing 1 required positional argument: 'bar'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) missing 1 required positional argument: 'bar'",
         ),
         (
             [MockCheck],
             {"mock_check": {"Bar": 2}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) got an unexpected keyword argument 'Bar'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) got an unexpected keyword argument 'Bar'",
         ),
         (
             [MockCheck],
             {"mock_check": {"fo": 3, "ba": 4}},
             DataCheckInitError,
-            r"Encountered the following error while initializing mock_check: __init__\(\) got an unexpected keyword argument 'fo'",
+            r"Encountered the following error while initializing mock_check: .*__init__\(\) got an unexpected keyword argument 'fo'",
         ),
         (
             [MockCheck],
