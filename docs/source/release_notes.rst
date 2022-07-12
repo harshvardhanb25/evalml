@@ -2,7 +2,7 @@ Release Notes
 -------------
 **Future Releases**
     * Enhancements
-        * Defined `get_trend_df()` for PolynomialDetrender to allow decomposition of target data into trend, seasonality and residual. :pr:`3599`
+        * Defined `get_trend_df()` for PolynomialDecomposer to allow decomposition of target data into trend, seasonality and residual. :pr:`3599`
         * Increased the amount of logical type information passed to Woodwork when calling ``ww.init()`` in transformers :pr:`3604`
         * Added ability to log how long each batch and pipeline take in ``automl.search()`` :pr:`3577`
         * Added the option to set the ``sp`` parameter for ARIMA models :pr:`3597`
@@ -13,12 +13,12 @@ Release Notes
         * Bump minimum scikit-optimize version to 0.9.0 `:pr:`3614`
     * Changes
         * Bumped up minimum version of sktime to 0.12.0. :pr:`3599`
-        * Added abstract Detrender class as a parent to PolynomialDetrender to support additional detrenders. :pr:`3599`
+        * Added abstract Detrender class as a parent to PolynomialDecomposer to support additional detrenders. :pr:`3599`
         * Add pre-commit hooks for linting :pr:`3608`
     * Documentation Changes
     * Testing Changes
         * Pinned GraphViz version for Windows CI Test :pr:`3596`
-        * Removed skipping of PolynomialDetrender tests for Python 3.9 envs. :pr:`3599`
+        * Removed skipping of PolynomialDecomposer tests for Python 3.9 envs. :pr:`3599`
         * Removed ``pytest.mark.skip_if_39`` pytest marker :pr:`3602` :pr:`3607`
 
 .. warning::
@@ -1012,7 +1012,7 @@ Release Notes
         * Added recommended actions for the output of data check's ``validate`` method :pr:`1968`
         * Added error message for ``partial_dependence`` when features are mostly the same value :pr:`1994`
         * Updated ``OneHotEncoder`` to drop one redundant feature by default for features with two categories :pr:`1997`
-        * Added a ``PolynomialDetrender`` component :pr:`1992`
+        * Added a ``PolynomialDecomposer`` component :pr:`1992`
         * Added ``DateTimeNaNDataCheck`` data check :pr:`2039`
     * Fixes
         * Changed best pipeline to train on the entire dataset rather than just ensemble indices for ensemble problems :pr:`2037`
