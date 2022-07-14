@@ -351,7 +351,11 @@ def test_default_data_checks_classification(input_type, data_checks_input_datafr
 
     assert (
         data_checks.validate(X, y_multiclass)
-        == expected[:4] + min_2_class_count + high_class_to_sample_ratio + expected[4:] + imbalance
+        == expected[:4]
+        + min_2_class_count
+        + high_class_to_sample_ratio
+        + expected[4:]
+        + imbalance
     )
 
     data_checks = DataChecks(
@@ -550,7 +554,9 @@ def test_default_data_checks_across_problem_types(problem_type):
         for check in DefaultDataChecks(
             problem_type,
             get_default_primary_search_objective(problem_type),
-            problem_configuration=problem_config if is_time_series(problem_type) else None,
+            problem_configuration=problem_config
+            if is_time_series(problem_type)
+            else None,
         ).data_checks
     ]
 
