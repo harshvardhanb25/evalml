@@ -11,7 +11,9 @@ from evalml.pipelines import (
     TimeSeriesMulticlassClassificationPipeline,
     TimeSeriesRegressionPipeline,
 )
-from evalml.pipelines.binary_classification_pipeline import BinaryClassificationPipeline
+from evalml.pipelines.binary_classification_pipeline import (
+    BinaryClassificationPipeline,
+)
 from evalml.pipelines.components import (  # noqa: F401
     CatBoostClassifier,
     CatBoostRegressor,
@@ -43,7 +45,9 @@ from evalml.pipelines.components import (  # noqa: F401
     Undersampler,
     URLFeaturizer,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
+)
 from evalml.pipelines.components.utils import (
     estimator_unable_to_handle_nans,
     get_estimators,

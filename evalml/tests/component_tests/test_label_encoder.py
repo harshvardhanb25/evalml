@@ -1,7 +1,11 @@
 import pandas as pd
 import pytest
 import woodwork as ww
-from pandas.testing import assert_frame_equal, assert_index_equal, assert_series_equal
+from pandas.testing import (
+    assert_frame_equal,
+    assert_index_equal,
+    assert_series_equal,
+)
 
 from evalml.pipelines.components import LabelEncoder
 

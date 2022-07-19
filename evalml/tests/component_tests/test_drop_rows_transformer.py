@@ -2,7 +2,9 @@ import pandas as pd
 import pytest
 from pandas.testing import assert_frame_equal, assert_series_equal
 
-from evalml.pipelines.components.transformers.preprocessing import DropRowsTransformer
+from evalml.pipelines.components.transformers.preprocessing import (
+    DropRowsTransformer,
+)
 
 
 def test_drop_rows_transformer_init():

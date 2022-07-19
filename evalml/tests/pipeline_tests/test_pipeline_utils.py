@@ -30,7 +30,9 @@ from evalml.pipelines.components import (
     Transformer,
     URLFeaturizer,
 )
-from evalml.pipelines.components.transformers.encoders.label_encoder import LabelEncoder
+from evalml.pipelines.components.transformers.encoders.label_encoder import (
+    LabelEncoder,
+)
 from evalml.pipelines.components.transformers.imputers.per_column_imputer import (
     PerColumnImputer,
 )

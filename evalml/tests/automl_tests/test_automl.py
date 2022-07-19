@@ -70,7 +70,9 @@ from evalml.problem_types import (
     is_classification,
     is_time_series,
 )
-from evalml.tests.automl_tests.parallel_tests.test_automl_dask import engine_strs
+from evalml.tests.automl_tests.parallel_tests.test_automl_dask import (
+    engine_strs,
+)
 from evalml.tests.automl_tests.test_automl_iterative_algorithm import (
     _get_first_stacked_classifier_no,
 )
