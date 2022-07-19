@@ -22,10 +22,7 @@ from evalml.pipelines.components import (
     Estimator,
     LinearDiscriminantAnalysis,
 )
-from evalml.pipelines.components.utils import (
-    all_components,
-    handle_component_class,
-)
+from evalml.pipelines.components.utils import all_components, handle_component_class
 from evalml.pipelines.pipeline_meta import PipelineBaseMeta
 from evalml.problem_types import is_binary
 from evalml.utils import (
