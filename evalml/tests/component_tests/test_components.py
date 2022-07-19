@@ -1270,6 +1270,7 @@ def test_serialization(X_y_binary, ts_data, tmpdir, helper_functions):
         ProphetRegressor,
         TimeSeriesFeaturizer,
         TimeSeriesRegularizer,
+        PolynomialDecomposer,
     ]
     for component_class in all_components():
         print("Testing serialization of component {}".format(component_class.name))
