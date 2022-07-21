@@ -9,6 +9,8 @@ Release Notes
         * Fixed iterative graphs not appearing in documentation :pr:`3592`
         * Updated the ``load_diabetes()`` method to account for scikit-learn 1.1.1 changes to the dataset :pr:`3591`
         * Updated ``test_data_checks.py::test_data_checks_raises_value_errors_on_init`` - more lenient text check :pr:`3609`
+        * Capped woodwork version at < 0.17.0 :pr:`3612`
+        * Bump minimum scikit-optimize version to 0.9.0 `:pr:`3614`
     * Changes
         * Add pre-commit hooks for linting :pr:`3608`
     * Documentation Changes
